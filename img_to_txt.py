@@ -1,4 +1,3 @@
-import cv2
 from PIL import Image
 import PIL.Image
 from pytesseract import image_to_string
@@ -12,4 +11,4 @@ def to_text(pic):
     text = pytesseract.image_to_string(img)
     return text
 
-to_text(test.jpg)
+print(to_text("test.jpg"))
