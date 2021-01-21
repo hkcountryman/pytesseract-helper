@@ -37,8 +37,6 @@ def to_text(pic):
     text = image_to_string(img)
     return text
 
-#print(to_text("test.jpg"))
-
 def check_text(ocr, accuracy_pct, language="en", distance=2, case_sensitive=True):
     """
     Checks that the output of to_text() makes sense. To build your own dictionary, see
@@ -70,9 +68,6 @@ def check_text(ocr, accuracy_pct, language="en", distance=2, case_sensitive=True
     
     return True # otherwise, all good
 
-#print(to_text("misspelling.png"))
-#print(check_text(to_text("misspelling.png"), 80))
-
 def no_alpha(pic):
     """
     Removes the alpha channel from an image, if it exists. Necessary for OCR.
@@ -100,11 +95,6 @@ def invert(pic):
     img = img.convert("RGB") # convert to RGB
     return ImageOps.invert(img) # negative colors
 
-#print(to_text("ghbio.png"))
-#pic = invert("ghbio.png")
-#pic.save("inverted.png")
-#print(to_text("inverted.png"))
-
 def resize(pic):
     """
     Resizes an image that is less than 300 dpi. Useful if OCR doesn't work.
@@ -121,10 +111,6 @@ def resize(pic):
     factor = 300 / lower # how much should we scale?
     resized = img.resize((round(img.size[0]*factor), round(img.size[1]*factor))) # scale it!
     return resized
-
-#pic = resize("test.jpg")
-#pic.save("resized.jpg")
-#print(to_text("resized.jpg"))
 
 def threshold(pic, gaussian=True):
     """
@@ -161,19 +147,6 @@ def denoise(pic): # It does not work :(
     img = cv.fastNlMeansDenoising(img)
     return Image.fromarray(img)
 
-#print(to_text("test2.jpg"))
-#pic = threshold("test2.jpg", gaussian = True)
-#pic.save("anotherTry.png")
-#pic = denoise("anotherTry.png")
-#pic.save("anotherTry.png")
-#print(to_text("anotherTry.png"))
-#pic = threshold("test2.jpg", gaussian = False)
-#pic.save("anotherTry2.png")
-#print(to_text("anotherTry2.png"))
-#pic = denoise("anotherTry2.png")
-#pic.save("testing123.png")
-#print(to_text("testing123.png"))
-
 def dilate(pic, size):
     """
     Dilates the text (grows edges of characters) if it's against a common background.
@@ -188,11 +161,6 @@ def dilate(pic, size):
     """
     img = Image.open(pic)
     return img.filter(ImageFilter.MaxFilter(size))
-
-#print(to_text("Dilation_original.png"))
-#pic = dilate("Dilation_original.png", 1)
-#pic.save("Dilation_dilated.png")
-#print(to_text("Dilation_dilated.png"))
 
 def erode(pic, size):
     """
@@ -223,16 +191,4 @@ def deskew(pic, output):
     angle = determine_skew(grayscale)
     rotated = rotate(img, angle, resize=True) * 255
     io.imsave(output, rotated.astype(np.uint8))
-
-#print(to_text("input.jpeg"))
-#deskew("input.jpeg", "deskewed.jpeg")
-#print(to_text("deskewed.jpeg"))
-
-#print(to_text("Erosion_original.png"))
-#pic = erode("Erosion_original.png", val)
-#pic.save("Erosion_eroded.png")
-#print(to_text("Erosion_eroded.png"))
-
-#To Do:
-# borders
-# should I not be opening the image in every function?
+    
