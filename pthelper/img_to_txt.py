@@ -26,10 +26,10 @@ def to_text(pic):
         img = Image.open(pic)
     except FileNotFoundError as e:
         print("File " + pic + " does not exist.")
-        return ""
+        quit()
     except PIL.UnidentifiedImageError as e:
         print("That file is not an image.")
-        return ""
+        quit()
     except:
         print("Unanticipated error:")
         traceback.print_exc()
@@ -37,7 +37,7 @@ def to_text(pic):
     text = image_to_string(img)
     return text
 
-def check_text(ocr, accuracy_pct, language="en", distance=2, case_sensitive=True):
+def valid_text(ocr, accuracy_pct, language="en", distance=2, case_sensitive=True):
     """
     Checks that the output of to_text() makes sense. To build your own dictionary, see
     https://pyspellchecker.readthedocs.io/en/latest/quickstart.html#how-to-build-a-new-dictionary
