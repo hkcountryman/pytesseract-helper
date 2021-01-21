@@ -1,7 +1,11 @@
 import cv2 as cv
+from deskew import determine_skew
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image, ImageFilter, ImageOps
 from pytesseract import image_to_string
+from skimage import io
+from skimage.color import rgb2gray
+from skimage.transform import rotate
 import traceback
 
 # On Windows, you need to tell it where Tesseract is installed, for example:
@@ -33,6 +37,19 @@ def to_text(pic):
     return text
 
 #print(to_text("test.jpg"))
+
+def no_alpha(pic):
+    """
+    Removes the alpha channel from an image, if it exists. Necessary for OCR.
+
+    Args:
+        pic: filename string, pathlib.Path object, or file object to read.
+    
+    Returns:
+        The image in RGB format.
+    """
+    img = Image.open(pic)
+    return img.convert("RGB")
 
 def invert(pic):
     """
@@ -95,9 +112,9 @@ def threshold(pic, gaussian = True):
         img = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 11, 2)
     return Image.fromarray(img)
 
-def denoise(pic):
+def denoise(pic): # It does not work :(
     """
-    Allegedly removes noise?
+    Allegedly removes noise? Useful if OCR doesn't work.
 
     Args:
         pic: filename string, pathlib.Path object, or file object to read.
@@ -118,9 +135,69 @@ def denoise(pic):
 #pic = threshold("test2.jpg", gaussian = False)
 #pic.save("anotherTry2.png")
 #print(to_text("anotherTry2.png"))
+#pic = denoise("anotherTry2.png")
+#pic.save("testing123.png")
+#print(to_text("testing123.png"))
+
+def dilate(pic, size):
+    """
+    Dilates the text (grows edges of characters) if it's against a common background.
+    Useful if OCR doesn't work.
+
+    Args:
+        pic: filename string, pathlib.Path object, or file object to read.
+        size: kernel size, in pixels. Recommend starting at 1.
+
+    Returns:
+        The dilated image.
+    """
+    img = Image.open(pic)
+    return img.filter(ImageFilter.MaxFilter(size))
+
+#print(to_text("Dilation_original.png"))
+#pic = dilate("Dilation_original.png", 1)
+#pic.save("Dilation_dilated.png")
+#print(to_text("Dilation_dilated.png"))
+
+def erode(pic, size):
+    """
+    Erodes the text (shrinks edges of characters) if it's against a common background.
+    Useful if OCR doesn't work.
+
+    Args:
+        pic: filename string, pathlib.Path object, or file object to read.
+        size: kernel size, in pixels. Recommend starting at 1.
+
+    Returns:
+        The eroded image.
+    """
+    img = Image.open(pic)
+    return img.filter(ImageFilter.MinFilter(size))
+
+def deskew(pic, output):
+    """
+    Deskews an image. Useful if OCR doesn't work.
+
+    Args:
+        pic: filename string, pathlib.Path object, or file object to read.
+        output: string to save output as
+    """
+    # Thanks to Stephane Brunner (https://github.com/sbrunner) for deskew and the code!
+    img = io.imread(pic)
+    grayscale = rgb2gray(img)
+    angle = determine_skew(grayscale)
+    rotated = rotate(img, angle, resize = True) * 255
+    io.imsave(output, rotated.astype(np.uint8))
+
+#print(to_text("input.jpeg"))
+#deskew("input.jpeg", "deskewed.jpeg")
+#print(to_text("deskewed.jpeg"))
+
+#print(to_text("Erosion_original.png"))
+#pic = erode("Erosion_original.png", val)
+#pic.save("Erosion_eroded.png")
+#print(to_text("Erosion_eroded.png"))
 
 #To Do:
-# dilation/erosion
-# rotation/deskewing
 # borders
-# remove alpha channel!!
+# should I not be opening the image in every function?
