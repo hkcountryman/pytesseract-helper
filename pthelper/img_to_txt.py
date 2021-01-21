@@ -51,9 +51,10 @@ def valid_text(ocr, accuracy_pct, language="en", distance=2, case_sensitive=True
             https://pyspellchecker.readthedocs.io/en/latest/quickstart.html#basic-usage
             https://en.wikipedia.org/wiki/Levenshtein_distance
     
-    Returns: boolean indicating success of to_text():
-        True: to_text() makes sense.
-        False: to_text() returned nonsense.
+    Returns:
+        Boolean indicating success of to_text():
+            True: to_text() makes sense.
+            False: to_text() returned nonsense.
     """
     if ocr == "":
         return False # if it returned nothing
@@ -61,12 +62,33 @@ def valid_text(ocr, accuracy_pct, language="en", distance=2, case_sensitive=True
     word_list = ocr.split() # get list of all words in input string
     spell = SpellChecker(language=language, distance=distance, case_sensitive=case_sensitive)
     misspelled = spell.unknown(word_list) # list of unknown words from word_list
-    print(misspelled)
-    print(word_list)
     if (len(word_list) - len(misspelled)) / len(word_list) < accuracy_pct / 100:
         return False # if it returned gibberish
     
     return True # otherwise, all good
+
+def parse(pic, accuracy_pct, language="en", distance=2, case_sensitive=True):
+    """
+    Attempts OCR with image and decides if processing is needed.
+    
+    Args:
+        pic: filename string, pathlib.Path object, or file object to read.
+        accuracy_pct: percentage of words in string that should be in the dictionary.
+        language: language of dictionary (default English); see
+            https://pyspellchecker.readthedocs.io/en/latest/quickstart.html#changing-language
+        distance: Levenshtein distance (default 2 for shorter words); see
+            https://pyspellchecker.readthedocs.io/en/latest/quickstart.html#basic-usage
+            https://en.wikipedia.org/wiki/Levenshtein_distance
+
+    Returns:
+        Text from the image if OCR was successful; otherwise failure message.
+    """
+    text = to_text(pic)
+    if valid_text(text, accuracy_pct, language=language, distance=distance,
+                    case_sensitive=case_sensitive):
+        return text
+    else:
+        return "OCR failed." # process
 
 def no_alpha(pic):
     """
