@@ -6,6 +6,7 @@ from pytesseract import image_to_string
 from skimage import io
 from skimage.color import rgb2gray
 from skimage.transform import rotate
+from spellchecker import SpellChecker
 import traceback
 
 # On Windows, you need to tell it where Tesseract is installed, for example:
@@ -37,6 +38,40 @@ def to_text(pic):
     return text
 
 #print(to_text("test.jpg"))
+
+def check_text(ocr, accuracy_pct, language="en", distance=2, case_sensitive=True):
+    """
+    Checks that the output of to_text() makes sense. To build your own dictionary, see
+    https://pyspellchecker.readthedocs.io/en/latest/quickstart.html#how-to-build-a-new-dictionary
+
+    Args:
+        ocr: string to analyze.
+        accuracy_pct: percentage of words in ocr that should be in the dictionary.
+        language: language of dictionary (default English); see
+            https://pyspellchecker.readthedocs.io/en/latest/quickstart.html#changing-language
+        distance: Levenshtein distance (default 2 for shorter words); see
+            https://pyspellchecker.readthedocs.io/en/latest/quickstart.html#basic-usage
+            https://en.wikipedia.org/wiki/Levenshtein_distance
+    
+    Returns: boolean indicating success of to_text():
+        True: to_text() makes sense.
+        False: to_text() returned nonsense.
+    """
+    if ocr == "":
+        return False # if it returned nothing
+
+    word_list = ocr.split() # get list of all words in input string
+    spell = SpellChecker(language=language, distance=distance, case_sensitive=case_sensitive)
+    misspelled = spell.unknown(word_list) # list of unknown words from word_list
+    print(misspelled)
+    print(word_list)
+    if (len(word_list) - len(misspelled)) / len(word_list) < accuracy_pct / 100:
+        return False # if it returned gibberish
+    
+    return True # otherwise, all good
+
+#print(to_text("misspelling.png"))
+#print(check_text(to_text("misspelling.png"), 80))
 
 def no_alpha(pic):
     """
@@ -84,14 +119,14 @@ def resize(pic):
     res = img.info["dpi"] # fetch tuple of dpi
     lower = min(res) # get the lower of the two entries in the tuple
     factor = 300 / lower # how much should we scale?
-    resized = img.resize((round(img.size[0] * factor), round(img.size[1] * factor))) # scale it!
+    resized = img.resize((round(img.size[0]*factor), round(img.size[1]*factor))) # scale it!
     return resized
 
 #pic = resize("test.jpg")
 #pic.save("resized.jpg")
 #print(to_text("resized.jpg"))
 
-def threshold(pic, gaussian = True):
+def threshold(pic, gaussian=True):
     """
     Applies thresholding to the image. Doesn't work.
     (Tesseract already tries the Otsu algorithm.)
@@ -186,7 +221,7 @@ def deskew(pic, output):
     img = io.imread(pic)
     grayscale = rgb2gray(img)
     angle = determine_skew(grayscale)
-    rotated = rotate(img, angle, resize = True) * 255
+    rotated = rotate(img, angle, resize=True) * 255
     io.imsave(output, rotated.astype(np.uint8))
 
 #print(to_text("input.jpeg"))
