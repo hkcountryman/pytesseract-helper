@@ -12,6 +12,8 @@ import traceback
 # On Windows, you need to tell it where Tesseract is installed, for example:
 # pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe
 
+# OCR Stuff
+####################################################################################################
 def to_text(pic):
     """
     Read and return text from an image.
@@ -34,6 +36,7 @@ def to_text(pic):
         print("Unanticipated error:")
         traceback.print_exc()
         quit()
+    remove_alpha(img)
     text = image_to_string(img)
     return text
 
@@ -81,27 +84,29 @@ def parse(pic, accuracy_pct, language="en", distance=2, case_sensitive=True):
             https://en.wikipedia.org/wiki/Levenshtein_distance
 
     Returns:
-        Text from the image if OCR was successful; otherwise failure message.
+        Text from the image if OCR was successful; otherwise a failure message.
     """
     text = to_text(pic)
     if valid_text(text, accuracy_pct, language=language, distance=distance,
                     case_sensitive=case_sensitive):
         return text
     else:
-        return "OCR failed." # process
+        return "OCR failed." # time for processing
 
-def no_alpha(pic):
+# Image Processing Stuff
+####################################################################################################
+
+def remove_alpha(pic):
     """
     Removes the alpha channel from an image, if it exists. Necessary for OCR.
 
     Args:
-        pic: filename string, pathlib.Path object, or file object to read.
+        pic: PIL.Image object to convert.
     
     Returns:
         The image in RGB format.
     """
-    img = Image.open(pic)
-    return img.convert("RGB")
+    return pic.convert("RGB")
 
 def invert(pic):
     """
