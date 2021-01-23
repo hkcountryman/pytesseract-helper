@@ -40,7 +40,7 @@ def to_text(pic):
     text = image_to_string(img)
     return text
 
-def valid_text(ocr, accuracy_pct, language="en", distance=2, case_sensitive=True):
+def valid_text(ocr, accuracy_pct, language="en", distance=2, case_sensitive=True): # this spellchecker sucks
     """
     Checks that the output of to_text() makes sense. To build your own dictionary, see
     https://pyspellchecker.readthedocs.io/en/latest/quickstart.html#how-to-build-a-new-dictionary
@@ -65,6 +65,8 @@ def valid_text(ocr, accuracy_pct, language="en", distance=2, case_sensitive=True
     word_list = ocr.split() # get list of all words in input string
     spell = SpellChecker(language=language, distance=distance, case_sensitive=case_sensitive)
     misspelled = spell.unknown(word_list) # list of unknown words from word_list
+    #print(misspelled)
+    #print(word_list)
     if (len(word_list) - len(misspelled)) / len(word_list) < accuracy_pct / 100:
         return False # if it returned gibberish
     
@@ -104,7 +106,7 @@ def remove_alpha(pic):
         pic: PIL.Image object to convert.
     
     Returns:
-        The image in RGB format.
+        The PIL.Image object in RGB format.
     """
     return pic.convert("RGB")
 
@@ -113,33 +115,31 @@ def invert(pic):
     Inverts the colors in an image. Useful if OCR doesn't work.
 
     Args:
-        pic: filename string, pathlib.Path object, or file object to read.
+        pic: PIL.Image object to invert.
 
     Returns:
-        The inverted image.
+        The inverted PIL.Image object.
     """
-    img = Image.open(pic)
-    img = img.convert("RGB") # convert to RGB
-    return ImageOps.invert(img) # negative colors
+    return ImageOps.invert(remove_alpha(pic)) # negative colors
 
-def resize(pic):
+def resize(pic): # needs work: possible key error "dpi"
     """
     Resizes an image that is less than 300 dpi. Useful if OCR doesn't work.
 
     Args:
-        pic: filename string, pathlib.Path object, or file object to read.
+        pic: PIL.Image object to resize.
 
     Returns:
-        The resized image.
+        The resized PIL.Image object.
     """
-    img = Image.open(pic)
-    res = img.info["dpi"] # fetch tuple of dpi
+    pic = remove_alpha(pic)
+    res = pic.info["dpi"] # fetch tuple of dpi
     lower = min(res) # get the lower of the two entries in the tuple
     factor = 300 / lower # how much should we scale?
-    resized = img.resize((round(img.size[0]*factor), round(img.size[1]*factor))) # scale it!
+    resized = pic.resize((round(pic.size[0]*factor), round(pic.size[1]*factor))) # scale it!
     return resized
 
-def threshold(pic, gaussian=True):
+def threshold(pic, gaussian=True): # needs work
     """
     Applies thresholding to the image. Doesn't work.
     (Tesseract already tries the Otsu algorithm.)
@@ -160,7 +160,7 @@ def threshold(pic, gaussian=True):
         img = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 11, 2)
     return Image.fromarray(img)
 
-def denoise(pic): # It does not work :(
+def denoise(pic): # needs work
     """
     Allegedly removes noise? Useful if OCR doesn't work.
 
@@ -180,14 +180,14 @@ def dilate(pic, size):
     Useful if OCR doesn't work.
 
     Args:
-        pic: filename string, pathlib.Path object, or file object to read.
+        pic: PIL.Image object to dilate.
         size: kernel size, in pixels. Recommend starting at 1.
 
     Returns:
-        The dilated image.
+        The dilated PIL.Image object.
     """
-    img = Image.open(pic)
-    return img.filter(ImageFilter.MaxFilter(size))
+    pic = remove_alpha(pic)
+    return pic.filter(ImageFilter.MaxFilter(size))
 
 def erode(pic, size):
     """
@@ -195,16 +195,16 @@ def erode(pic, size):
     Useful if OCR doesn't work.
 
     Args:
-        pic: filename string, pathlib.Path object, or file object to read.
+        pic: PIL.Image object to erode.
         size: kernel size, in pixels. Recommend starting at 1.
 
     Returns:
-        The eroded image.
+        The eroded PIL.Image object.
     """
-    img = Image.open(pic)
-    return img.filter(ImageFilter.MinFilter(size))
+    pic = remove_alpha(pic)
+    return pic.filter(ImageFilter.MinFilter(size))
 
-def deskew(pic, output):
+def deskew(pic, output): # needs work
     """
     Deskews an image. Useful if OCR doesn't work.
 
