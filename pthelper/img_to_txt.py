@@ -122,7 +122,7 @@ def invert(pic):
     """
     return ImageOps.invert(remove_alpha(pic)) # negative colors
 
-def resize(pic): # needs work: possible key error "dpi"
+'''def resize(pic): # needs work: possible key error "dpi"
     """
     Resizes an image that is less than 300 dpi. Useful if OCR doesn't work.
 
@@ -137,7 +137,7 @@ def resize(pic): # needs work: possible key error "dpi"
     lower = min(res) # get the lower of the two entries in the tuple
     factor = 300 / lower # how much should we scale?
     resized = pic.resize((round(pic.size[0]*factor), round(pic.size[1]*factor))) # scale it!
-    return resized
+    return resized'''
 
 def threshold(pic, gaussian=True): # needs work
     """

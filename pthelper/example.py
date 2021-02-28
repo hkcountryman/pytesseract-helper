@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 
+import os
+from typing import Callable
+
 from img_to_txt import *
 
-def main():
-    pic = "../images/resize.png"
-    success = parse(pic, 90) # 50% seems good for ingredient lists
+def testFun(name:str, fun:Callable, spellCheck:int):
+    pic = os.path.join(os.getcwd(), "images", name)
+    success = parse(pic, spellCheck) # 50% seems good for ingredient lists
     print(success) # display text or failure message to user
     if success == "OCR failed.": # now we try our functions
         img = Image.open(pic)
-
-        # pic = "../images/invert.png": try inverting
-        #img = invert(img)
-
-        # pic = "../images/resize.png": try resizing
-        img = resize(img)
-
+        if fun == invert:
+            img = invert(img)
         img.save("temp.jpeg")
         print(parse("temp.jpeg", 50))
+
+def main():
+    testFun("invert.png", invert, 100)
 
 
 if __name__ == "__main__":
